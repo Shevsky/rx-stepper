@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "allowUnusedLabels": false,
+    "noUnusedLocals": false,
+    "rootDir": "src",
+    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noEmitHelpers": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "target": "es5",
+    "removeComments": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "importHelpers": true,
+    "strict": false,
+    "strictNullChecks": true,
+    "resolveJsonModule": true,
+    "stripInternal": true,
+    "outDir": "dist",
+    "lib": [
+      "dom",
+      "es2015",
+      "es2016",
+    ],
+    "baseUrl": "./src",
+    "paths": {
+      "*": [
+        "*"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

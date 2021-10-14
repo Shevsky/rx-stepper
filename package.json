@@ -1,0 +1,38 @@
+{
+  "name": "rx-stepper",
+  "version": "1.0.0",
+  "main": "cjs/index.min.js",
+  "module": "es/index.min.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "build_es": "tsc -p . -d true --declarationDir dist/types --outDir dist/es",
+    "build_cjs": "tsc -p . --outDir dist/cjs -m commonjs",
+    "build": "npm run build_cjs && npm run build_es",
+    "minify_es": "node ./scripts/minify.js dist/es/index.js esm",
+    "minify_cjs": "node ./scripts/minify.js dist/cjs/index.js cjs",
+    "minify": "npm run minify_cjs && npm run minify_es",
+    "postbuild": "npm run minify && node ./scripts/create-build-package-json.js && node ./scripts/copy-readme.js",
+    "release": "npm publish --access public dist"
+  },
+  "peerDependencies": {
+    "history": ">=4.7.2",
+    "rxjs": ">=6.3.3",
+    "tslib": ">=2.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.13.5",
+    "history": "4.7.2",
+    "rxjs": "6.3.3",
+    "typescript": "4.4.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shevsky/rx-stepper.git"
+  },
+  "author": "Konstantin Shevsky",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Shevsky/rx-stepper.git/issues"
+  },
+  "homepage": "https://github.com/Shevsky/rx-stepper.git#readme"
+}
