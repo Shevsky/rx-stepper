@@ -1,5 +1,5 @@
 import { History } from 'history';
-import { IRouteMatcherInterface } from 'interfaces/route-matcher.interface';
+import { IRouteMatcherInterface } from './../../interfaces/route-matcher.interface';
 import { TCommonStepperConfig } from './../common-stepper/common-stepper.type';
 
 export type TRouteStepperConfig<T extends string> = TCommonStepperConfig<T> & {
