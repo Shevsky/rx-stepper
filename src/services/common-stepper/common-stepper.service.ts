@@ -107,6 +107,10 @@ export class CommonStepperService<T extends string> implements IStepperInterface
 
   /** Переходит к конкретному шагу */
   goTo = (step: T, previousStep?: T, nextStep?: T): Promise<void> => {
+    if (!this.config.steps.includes(step) && !this.config.allowNotExpectedSteps) {
+      return Promise.reject(new Error(`Шаг ${step} недоступен`));
+    }
+
     return (this.config.onPendingStep?.(step, this.currentStep) ?? Promise.resolve()).then((): void => {
       this.overridePreviousStep = previousStep;
       this.overrideNextStep = nextStep;

@@ -11,6 +11,11 @@ export type TCommonStepperConfig<T extends string> = {
   defaultStep?: T;
 
   /**
+   * Разрешить переход к другим шагам (не перечисленным в steps0
+   */
+  allowNotExpectedSteps?: boolean;
+
+  /**
    * Функция будет вызвана при попытке перехода к указанному шагу
    * Если промис завершится ошибкой - переход не будет произведен
    */

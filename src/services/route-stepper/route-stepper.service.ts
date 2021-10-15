@@ -82,9 +82,9 @@ export class RouteStepperService<T extends string> extends CommonStepperService<
 
   /** Вернет параметр, соответствующий шагу, из параметров location */
   private get locationStep(): T | undefined {
-    const routeStep = this.locationParams?.[this.config.param ?? 'step'] as T | undefined;
-    if (routeStep && this.config.steps.includes(routeStep)) {
-      return routeStep;
+    const locationStep = this.locationParams?.[this.config.param ?? 'step'] as T | undefined;
+    if (locationStep && (this.config.steps.includes(locationStep) || this.config.allowNotExpectedSteps)) {
+      return locationStep;
     }
 
     return void 0;

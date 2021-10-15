@@ -1,6 +1,6 @@
 {
   "name": "rx-stepper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "cjs/index.min.js",
   "module": "es/index.min.js",
   "types": "types/index.d.ts",
