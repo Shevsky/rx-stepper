@@ -14,12 +14,12 @@ export interface IStepperInterface<T extends string> {
   readonly steps: Array<T>;
   /** Активный шаг */
   readonly currentStep: T;
-  /** Доступные действия */
-  readonly currentActions: IStepperActions;
   /** Предыдущий шаг */
   readonly previousStep: T | null;
   /** Следующий шаг */
   readonly nextStep: T | null;
+  /** Доступные действия */
+  readonly currentActions: IStepperActions;
   /** Переход назад доступен */
   readonly isBackAvailable: boolean;
   /** Переход вперед доступен */
@@ -27,8 +27,16 @@ export interface IStepperInterface<T extends string> {
 
   /** Активный шаг */
   readonly currentStep$: Observable<T>;
+  /** Предыдущий шаг */
+  readonly previousStep$: Observable<T | null>;
+  /** Следующий шаг */
+  readonly nextStep$: Observable<T | null>;
   /** Доступные действия */
   readonly currentActions$: Observable<IStepperActions>;
+  /** Переход назад доступен */
+  readonly isBackAvailable$: Observable<boolean>;
+  /** Переход вперед доступен */
+  readonly isForwardAvailable$: Observable<boolean>;
 
   /** Переходит на шаг назад */
   goBack(): Promise<void>;

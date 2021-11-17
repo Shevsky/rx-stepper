@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { IStepperActions, IStepperInterface } from './../../interfaces/stepper.interface';
 import { TCommonStepperConfig } from './common-stepper.type';
 
@@ -13,8 +13,16 @@ export class CommonStepperService<T extends string> implements IStepperInterface
 
   /** Активный шаг */
   readonly currentStep$: BehaviorSubject<T>;
+  /** Предыдущий шаг */
+  readonly previousStep$: Observable<T | null>;
+  /** Следующий шаг */
+  readonly nextStep$: Observable<T | null>;
   /** Доступные действия */
   readonly currentActions$: Observable<IStepperActions>;
+  /** Переход назад доступен */
+  readonly isBackAvailable$: Observable<boolean>;
+  /** Переход вперед доступен */
+  readonly isForwardAvailable$: Observable<boolean>;
 
   protected overridePreviousStep?: T;
   protected overrideNextStep?: T;
@@ -27,7 +35,23 @@ export class CommonStepperService<T extends string> implements IStepperInterface
 
     this.isReady$ = new BehaviorSubject<boolean>(false);
     this.currentStep$ = new BehaviorSubject<T>(this.config.defaultStep ?? this.config.steps[0]);
+    this.previousStep$ = this.currentStep$.pipe(
+      map((): T | null => this.previousStep),
+      distinctUntilChanged()
+    );
+    this.nextStep$ = this.currentStep$.pipe(
+      map((): T | null => this.nextStep),
+      distinctUntilChanged()
+    );
     this.currentActions$ = this.currentStep$.pipe(map((): IStepperActions => this.currentActions));
+    this.isBackAvailable$ = this.currentStep$.pipe(
+      map((): boolean => this.isBackAvailable),
+      distinctUntilChanged()
+    );
+    this.isForwardAvailable$ = this.currentStep$.pipe(
+      map((): boolean => this.isForwardAvailable),
+      distinctUntilChanged()
+    );
     this.steps = this.config.steps;
 
     void this.init().then((): void => this.isReady$.next(true));
