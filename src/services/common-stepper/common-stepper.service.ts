@@ -1,5 +1,7 @@
+import { STEPPER_ERROR_CODE, StepperError } from 'errors';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
+import { COMMON_STEPPER_DIRECTION } from 'services/common-stepper/common-stepper.enum';
 import { IStepperActions, IStepperInterface } from './../../interfaces/stepper.interface';
 import { TCommonStepperConfig } from './common-stepper.type';
 
@@ -30,7 +32,7 @@ export class CommonStepperService<T extends string> implements IStepperInterface
   /** @see TCommonStepperConfig */
   constructor(protected readonly config: TCommonStepperConfig<T>) {
     if (!this.config.steps.length) {
-      throw new Error('Не указаны шаги');
+      throw StepperError.makeWithMeta({ code: STEPPER_ERROR_CODE.INVALID_PARAMETERS }, 'Не указаны шаги');
     }
 
     this.isReady$ = new BehaviorSubject<boolean>(false);
@@ -106,41 +108,117 @@ export class CommonStepperService<T extends string> implements IStepperInterface
   }
 
   /** Переходит на шаг назад */
-  goBack = (): Promise<void> => {
-    const pendingStep = this.previousStep;
-    if (!pendingStep) {
-      return Promise.resolve();
-    }
+  goBack = async (): Promise<void> => {
+    try {
+      const pendingStep = this.previousStep;
+      if (!pendingStep) {
+        return Promise.resolve();
+      }
 
-    return this.goTo(pendingStep);
+      let isTransitionAllowed = true;
+      if (this.config.isTransitionAllowed) {
+        isTransitionAllowed = await this.config.isTransitionAllowed(
+          COMMON_STEPPER_DIRECTION.BACK,
+          this.currentStep,
+          pendingStep
+        );
+      }
+
+      if (!isTransitionAllowed) {
+        throw StepperError.makeWithMeta(
+          {
+            code: STEPPER_ERROR_CODE.TRANSITION_DISALLOWED,
+            currentStep: this.currentStep,
+            pendingStep
+          },
+          `Переход назад ${this.currentStep} -> ${pendingStep} недоступен`
+        );
+      }
+
+      return this.goTo(pendingStep);
+    } catch (e) {
+      this.catchError(e);
+    }
   };
 
   /** Переходит на шаг вперед */
-  goForward = (): Promise<void> => {
-    const pendingStep = this.nextStep;
-    if (!pendingStep) {
-      if (this.config.onCompleteRequest) {
-        return this.config.onCompleteRequest();
+  goForward = async (): Promise<void> => {
+    try {
+      const pendingStep = this.nextStep;
+
+      let isTransitionAllowed = true;
+      if (this.config.isTransitionAllowed) {
+        isTransitionAllowed = await this.config.isTransitionAllowed(
+          COMMON_STEPPER_DIRECTION.FORWARD,
+          this.currentStep,
+          pendingStep ?? void 0
+        );
       }
 
-      return Promise.resolve();
-    }
+      if (!isTransitionAllowed) {
+        throw StepperError.makeWithMeta(
+          {
+            code: STEPPER_ERROR_CODE.TRANSITION_DISALLOWED,
+            currentStep: this.currentStep,
+            pendingStep: pendingStep ?? void 0
+          },
+          `Переход вперед ${this.currentStep} -> ${pendingStep ?? '???'} недоступен`
+        );
+      }
 
-    return this.goTo(pendingStep);
+      if (!pendingStep) {
+        if (this.config.onCompleteRequest) {
+          return this.config.onCompleteRequest();
+        }
+
+        return Promise.resolve();
+      }
+
+      return this.goTo(pendingStep);
+    } catch (e) {
+      this.catchError(e);
+    }
   };
 
   /** Переходит к конкретному шагу */
-  goTo = (step: T, previousStep?: T, nextStep?: T): Promise<void> => {
-    if (!this.config.steps.includes(step) && !this.config.allowNotExpectedSteps) {
-      return Promise.reject(new Error(`Шаг ${step} недоступен`));
+  goTo = async (step: T, previousStep?: T, nextStep?: T): Promise<void> => {
+    try {
+      if (!this.config.steps.includes(step) && !this.config.allowNotExpectedSteps) {
+        throw StepperError.makeWithMeta(
+          { code: STEPPER_ERROR_CODE.NOT_EXPECTED_STEPS_DISALLOWED, currentStep: this.currentStep, pendingStep: step },
+          `Шаг ${step} недоступен`
+        );
+      }
+
+      let isTransitionAllowed = true;
+      if (this.config.isTransitionAllowed) {
+        isTransitionAllowed = await this.config.isTransitionAllowed(
+          COMMON_STEPPER_DIRECTION.DIRECT,
+          this.currentStep,
+          step
+        );
+      }
+
+      if (!isTransitionAllowed) {
+        throw StepperError.makeWithMeta(
+          {
+            code: STEPPER_ERROR_CODE.TRANSITION_DISALLOWED,
+            currentStep: this.currentStep,
+            pendingStep: step
+          },
+          `Переход ${this.currentStep} -> ${step} недоступен`
+        );
+      }
+
+      return (this.config.onPendingStep?.(step, this.currentStep) ?? Promise.resolve()).then((): void => {
+        this.overridePreviousStep = previousStep;
+        this.overrideNextStep = nextStep;
+
+        this.currentStep$.next(step);
+      });
+    } catch (e) {
+      this.catchError(e);
     }
-
-    return (this.config.onPendingStep?.(step, this.currentStep) ?? Promise.resolve()).then((): void => {
-      this.overridePreviousStep = previousStep;
-      this.overrideNextStep = nextStep;
-
-      this.currentStep$.next(step);
-    });
   };
 
   /** Сбрасывает шаг */
@@ -153,4 +231,16 @@ export class CommonStepperService<T extends string> implements IStepperInterface
     this.isReady$.complete();
     this.currentStep$.complete();
   }
+
+  private catchError = (error: unknown): void => {
+    if (this.config.onError) {
+      this.config.onError(
+        error instanceof StepperError
+          ? error
+          : StepperError.makeWithMeta({ code: STEPPER_ERROR_CODE.UNKNOWN, rawError: error })
+      );
+    } else {
+      throw error;
+    }
+  };
 }
