@@ -1,5 +1,5 @@
-import { StepperError } from 'errors/stepper.error';
-import { COMMON_STEPPER_DIRECTION } from 'services/common-stepper/common-stepper.enum';
+import { StepperError } from './../../errors';
+import { COMMON_STEPPER_DIRECTION } from './common-stepper.enum';
 
 export type TCommonStepperConfig<T extends string> = {
   /**

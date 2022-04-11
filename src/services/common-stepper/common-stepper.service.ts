@@ -1,8 +1,8 @@
-import { STEPPER_ERROR_CODE, StepperError } from 'errors';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { COMMON_STEPPER_DIRECTION } from 'services/common-stepper/common-stepper.enum';
+import { STEPPER_ERROR_CODE, StepperError } from './../../errors';
 import { IStepperActions, IStepperInterface } from './../../interfaces/stepper.interface';
+import { COMMON_STEPPER_DIRECTION } from './common-stepper.enum';
 import { TCommonStepperConfig } from './common-stepper.type';
 
 /** Сервис для осуществления пошагового прохождения процессов */
