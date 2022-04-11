@@ -233,6 +233,26 @@ export class CommonStepperService<T extends string> implements IStepperInterface
   }
 
   private catchError = (error: unknown): void => {
+    if (
+      this.config.onTransitionDisallowed &&
+      StepperError.isImplements<T, STEPPER_ERROR_CODE.TRANSITION_DISALLOWED>(
+        error,
+        STEPPER_ERROR_CODE.TRANSITION_DISALLOWED
+      )
+    ) {
+      return this.config.onTransitionDisallowed(error.meta.currentStep, error.meta.pendingStep);
+    }
+
+    if (
+      this.config.onNotExpectedStepsDisallowed &&
+      StepperError.isImplements<T, STEPPER_ERROR_CODE.NOT_EXPECTED_STEPS_DISALLOWED>(
+        error,
+        STEPPER_ERROR_CODE.NOT_EXPECTED_STEPS_DISALLOWED
+      )
+    ) {
+      return this.config.onNotExpectedStepsDisallowed(error.meta.currentStep, error.meta.pendingStep);
+    }
+
     if (this.config.onError) {
       this.config.onError(
         error instanceof StepperError

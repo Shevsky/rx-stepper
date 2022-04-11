@@ -29,17 +29,20 @@ export type TCommonStepperConfig<T extends string> = {
    */
   onError?(error: StepperError<T>): void;
 
+  onTransitionDisallowed?(currentStep: T, pendingStep?: T): void;
+
+  onNotExpectedStepsDisallowed?(currentStep: T, pendingStep?: T & string): void;
+
+  /**
+   * Функция будет вызвана при вызове действия "вперед" на последнем шаге
+   * Это действие подразумевает завершение прохождения шагов
+   */
+  onCompleteRequest?(): Promise<void>;
+
   /**
    * Функция будет вызвана при попытке перехода к указанному шагу
    * Если промис завершится ошибкой - переход не будет произведен
    * @deprecated
    */
   onPendingStep?(step: T, currentStep: T): Promise<void>;
-
-  /**
-   * Функция будет вызвана при вызове действия "вперед" на последнем шаге
-   * Это действие подразумевает завершение прохождения шагов
-   * @deprecated
-   */
-  onCompleteRequest?(): Promise<void>;
 };
